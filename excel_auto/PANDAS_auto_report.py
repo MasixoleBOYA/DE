@@ -35,9 +35,14 @@ def appending_to_onesheet(sheet_name: str) -> None:
 
 # PART 3: Add "Customer Names" column to Alrode sheet using pandas
 def add_customer_names_column():
+    
     alrode_sheet = work_book["Alrode"]
 
     alrode_df = pd.DataFrame(alrode_sheet.values, columns=[col[0].value for col in alrode_sheet.iter_cols()])
+    
+    alrode_df['Customer No.'] = alrode_df["Customer No."].astype(int)
+
+    print(f"\nXXXX TYPES XXXXX: {type(alrode_df["Customer No."])}\n")
     customer_codes_workbook_sheet = customer_codes_workbook["Cust Loc (3)"]
     customer_codes_workbook_df = pd.DataFrame(customer_codes_workbook_sheet.values, columns=[col[0].value for col in customer_codes_workbook_sheet.iter_cols()] )
 
@@ -79,5 +84,7 @@ appending_to_onesheet("Alrode")
 
 add_customer_names_column()
 add_product_names_column()
+
+
 
 work_book.save('C:/Users/J1121857/Downloads/AAAAAAAAAAAA.xlsx')
