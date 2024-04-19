@@ -1,6 +1,24 @@
 import pandas as pd
 from openpyxl import Workbook, load_workbook
+'''
+Traceback (most recent call last):
+  File "lib.pyx", line 2391, in pandas._libs.lib.maybe_convert_numeric
+ValueError: Unable to parse string "Customer No."
 
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "c:\Users\J1121857\OneDrive - TotalEnergies\Desktop\Git_Repos\excel_auto\PANDAS_auto_report.py", line 86, in <module>
+    add_customer_names_column()
+  File "c:\Users\J1121857\OneDrive - TotalEnergies\Desktop\Git_Repos\excel_auto\PANDAS_auto_report.py", line 44, in add_customer_names_column
+    alrode_df['Customer No.'] = pd.to_numeric(alrode_df["Customer No."])
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\J1121857\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\core\tools\numeric.py", line 232, in to_numeric
+    values, new_mask = lib.maybe_convert_numeric(  # type: ignore[call-overload]
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "lib.pyx", line 2433, in pandas._libs.lib.maybe_convert_numeric
+ValueError: Unable to parse string "Customer No." at position 0
+'''
 work_book = load_workbook('C:/Users/J1121857/Downloads/GANTRY_RAW_data.xlsx')
 product_codes_workbook = load_workbook('C:/Users/J1121857/Downloads/Copy of Reseller customer list 29 Mar 22.XLSX')  # Replace with the actual path
 customer_codes_workbook = load_workbook('C:/Users/J1121857/Downloads/Reseller ship-to list.xlsx')  # Replace with the actual path
@@ -30,6 +48,7 @@ def appending_to_onesheet(sheet_name: str) -> None:
 
     for depot_name in work_book.sheetnames[1:]:
         current_worksheet = work_book[depot_name]
+        print(f"\n Working on sheet : {current_worksheet}\n")
         for row in current_worksheet.iter_rows(min_row=2, max_row=current_worksheet.max_row, values_only=True):
             appending_sheet.append(row)
 
@@ -40,7 +59,7 @@ def add_customer_names_column():
 
     alrode_df = pd.DataFrame(alrode_sheet.values, columns=[col[0].value for col in alrode_sheet.iter_cols()])
     
-    alrode_df['Customer No.'] = alrode_df["Customer No."].astype(int)
+    alrode_df['Customer No.'] = pd.to_numeric(alrode_df["Customer No."])
 
     print(f"\nXXXX TYPES XXXXX: {type(alrode_df["Customer No."])}\n")
     customer_codes_workbook_sheet = customer_codes_workbook["Cust Loc (3)"]
