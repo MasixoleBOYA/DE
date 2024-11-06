@@ -7,7 +7,7 @@ FROM rdm01.ods_ssam_amt_wasted_per_transporter;
 ------------------------------------ waste per transporter -----------------------
 SELECT 
     "date",
-    depot_location,
+--  depot_location,
     transporter,
     total_amount_wasted_per_transporter,
     SUM(total_amount_wasted_per_transporter) OVER (
@@ -15,38 +15,61 @@ SELECT
         ORDER BY "date" 
         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
     ) AS month_to_date_total
+
 FROM 
     rdm01.ods_ssam_amt_wasted_per_transporter
-where depot_location = 'Waltloo'
+--where depot_location = 'Witbank'
 
 group by 
 	"date",
 	transporter,
-	total_amount_wasted_per_transporter,
-	depot_location
+	total_amount_wasted_per_transporter
+--	depot_location
 order by 
     transporter,
 "date"
+    
+-- xxxxxxxxxx
+SELECT 
+    "date",
+    transporter,
+    SUM(total_amount_wasted_per_transporter) AS daily_total_wasted_per_transporter,
+    SUM(SUM(total_amount_wasted_per_transporter)) OVER (
+        PARTITION BY transporter, date_trunc('month', "date")
+        ORDER BY "date" 
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS month_to_date_total
+FROM 
+    rdm01.ods_ssam_amt_wasted_per_transporter
+GROUP BY 
+    "date",
+    transporter
+ORDER BY 
+    transporter,
+    "date";
 
-
------------- depot exceptions split view -------------------
+    
+    
+-------------- depot exceptions split view -------------------
 SELECT * FROM rdm01.ods_ssam_lnt_exceptions;
 
 
 select
---	count(distinct tripnum) over(partition by cast(startdate as date)) as distinct_exceptions_by_day,
-	count(tripnum) over(partition by cast(startdate as date)) as exceptions_by_day,
---	sum(distinct exceptions_by_day) over(partition by extract(month from STARTDATE)),
-	tripnum,
+	loaddate as date,
+	--	count(distinct tripnum) over(partition by cast(startdate as date)) as distinct_exceptions_by_day,
+	--	count(avg_percent) over(partition by cast(loaddate as date)) as exceptions_by_day,
+	--	sum(distinct exceptions_by_day) over(partition by extract(month from STARTDATE)),
+	--	tripnum,
 	depotcode,
-	transporter,
-	vehiclereg,
-	startdate,
-	stopdate,
-	avg_percent,
-	loaddate,
-	total_trip_time,
-	total_distance
+--	transporter,
+	count(avg_percent) over(partition by depotcode) as cap_exceptions_by_day
+	--	vehiclereg,
+	--	startdate,
+	--	stopdate,
+	--	avg_percent,
+	--	loaddate,
+	--	total_trip_time,
+	--	total_distance
 from
 	rdm01.ods_ssam_lnt_exceptions
 
