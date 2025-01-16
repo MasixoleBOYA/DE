@@ -1,0 +1,6 @@
+--------
+Day 13
+
+- All hours from 00h00 - 11h00 have single files.
+- Multiple files only start from hour 12h00, with 2 files.
+- Each successive hour from there onwards has (+1) files.

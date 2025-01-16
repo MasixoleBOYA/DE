@@ -51,29 +51,82 @@ ORDER BY
     
     
 -------------- depot exceptions split view -------------------
-SELECT * FROM rdm01.ods_ssam_lnt_exceptions;
+SELECT * FROM rdm01.ods_ssam_lnt_exceptions limit 1;
+	
+-- xxxxxxxxxxxxxxx without rolling total xxxxxxxxxxxxxxxxxxxxxxxxxx
+	
+SELECT
+    DATE(loaddate) AS date,
+    depotcode,
+    depotname,
+    count(avg_percent) AS depot_split_exceptions
+FROM
+    rdm01.ods_ssam_lnt_exceptions
+--where total_distance != 0 and total_trip_time is not null
+GROUP BY
+    DATE(loaddate),
+    depotcode,
+    depotname
+ORDER BY
+    DATE(loaddate),
+    depotcode;
+   
+-- xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx with rolling total
+WITH daily_exceptions AS (
+    SELECT
+        DATE(loaddate) AS date_only,
+        depotcode,
+        COUNT(avg_percent) AS daily_exceptions
+    FROM
+        rdm01.ods_ssam_lnt_exceptions
+    GROUP BY
+        DATE(loaddate),
+        depotcode
+)
+SELECT
+    date_only,
+    depotcode,
+    daily_exceptions,
+    SUM(daily_exceptions) OVER (
+        PARTITION BY depotcode, EXTRACT(YEAR FROM date_only), EXTRACT(MONTH FROM date_only)
+        ORDER BY date_only
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS rolling_month_to_date_exceptions
+FROM
+    daily_exceptions
+    
+ORDER BY
+    date_only,
+    depotcode;
 
+-- xxxxxxxxxxxx final xxxxxxxxxxxxxxx
+SELECT *
+FROM 
+    rdm01.ods_ssam_lnt_exceptions
+where total_distance = 0   
+   
+   
+SELECT 
+    DATE(loaddate) AS date,
+    depotcode,
+    COUNT(avg_percent) AS capacity_exceptions_by_day,
+    SUM(COUNT(avg_percent)) OVER (
+        PARTITION BY depotcode, DATE_TRUNC('month', DATE(loaddate))
+        ORDER BY DATE(loaddate)
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS capacity_exceptions_mtd
+FROM 
+    rdm01.ods_ssam_lnt_exceptions
+--where total_distance != 0 and total_trip_time is not null
+GROUP BY 
+    DATE(loaddate),
+    depotcode
+ORDER BY 
+--    depotcode,
+    DATE(loaddate);
 
-select
-	loaddate as date,
-	--	count(distinct tripnum) over(partition by cast(startdate as date)) as distinct_exceptions_by_day,
-	--	count(avg_percent) over(partition by cast(loaddate as date)) as exceptions_by_day,
-	--	sum(distinct exceptions_by_day) over(partition by extract(month from STARTDATE)),
-	--	tripnum,
-	depotcode,
---	transporter,
-	count(avg_percent) over(partition by depotcode) as cap_exceptions_by_day
-	--	vehiclereg,
-	--	startdate,
-	--	stopdate,
-	--	avg_percent,
-	--	loaddate,
-	--	total_trip_time,
-	--	total_distance
-from
-	rdm01.ods_ssam_lnt_exceptions
-
-----------------------------------------------
+   
+-------------------------------------------------
   DISTINCT ti.tripnum,
   od.depotcode,
   ti.transporter,
@@ -114,9 +167,6 @@ FROM
 
 SELECT distinct *
 FROM rdm01.ods_ssam_all_kpi_total_exceptions_view;
-
-SELECT *
-FROM rdm01.ods_ssam_lnt_exceptions;
 
 SELECT *
 FROM rdm01.i_depot_view;
