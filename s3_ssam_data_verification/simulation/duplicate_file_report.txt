@@ -1,0 +1,7 @@
+Duplicate file names and their locations:
+ma.csv appears in:
+  - day=10\hour=00
+  - day=10\hour=01
+mas.csv appears in:
+  - day=10\hour=01
+  - day=10\hour=02

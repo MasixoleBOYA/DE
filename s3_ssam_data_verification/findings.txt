@@ -1,6 +1,10 @@
---------
-Day 13
+1. --------
+From Day 13, there are hours with multiple files
 
 - All hours from 00h00 - 11h00 have single files.
 - Multiple files only start from hour 12h00, with 2 files.
 - Each successive hour from there onwards has (+1) files.
+
+2. --------
+For a given day, different hours can have the same file name:
+e.g Day 13, hour 12 has a file "ddbols_20241213_110239", ALSO Day 13, hour 13.
